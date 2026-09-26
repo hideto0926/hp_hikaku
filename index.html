@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ネット通販 価格比較</title>
+<meta name="description" content="楽天市場・Yahoo!ショッピング・Amazonの価格を、ポイント還元込みの実質価格で比較できます。">
+<style>
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --text: #1d2330;
+  --muted: #667085;
+  --line: #e3e6eb;
+  --accent: #2458d6;
+  --accent-soft: #e8eefc;
+  --good: #137a4b;
+  --good-soft: #e3f5ec;
+  --rakuten: #bf0000;
+  --yahoo: #ff0033;
+  --amazon: #e47911;
+  --warn-soft: #fff6e0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b;
+    --card: #1b1f27;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --line: #2c323d;
+    --accent: #7ea2ff;
+    --accent-soft: #1f2a44;
+    --good: #5fd49a;
+    --good-soft: #173026;
+    --warn-soft: #3a3020;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  line-height: 1.6;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 48px; }
+.pr {
+  font-size: 12px; color: var(--muted); text-align: center;
+  padding: 6px 16px; border-bottom: 1px solid var(--line); background: var(--card);
+}
+header { padding: 28px 0 12px; }
+h1 { font-size: 24px; margin: 0 0 4px; }
+.lead { color: var(--muted); margin: 0; font-size: 14px; }
+
+.search { display: flex; gap: 8px; margin: 20px 0 12px; }
+.search input {
+  flex: 1; min-width: 0; font-size: 16px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text);
+}
+.search button {
+  font-size: 16px; padding: 0 22px; border: 0; border-radius: 10px;
+  background: var(--accent); color: #fff; font-weight: 600; cursor: pointer;
+}
+.search button:disabled { opacity: .6; cursor: wait; }
+
+details.conds {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 16px;
+}
+details.conds summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.cond-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 10px; }
+.cond-group h3 { font-size: 13px; margin: 0 0 6px; }
+.cond-group label { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; margin: 4px 0; cursor: pointer; }
+.cond-group small { color: var(--muted); }
+.cond-note { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+.banner {
+  background: var(--warn-soft); border-radius: 10px; padding: 10px 14px;
+  font-size: 13px; margin-bottom: 16px;
+}
+.status { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.error { color: var(--rakuten); }
+
+.best {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px;
+}
+.best-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+  border-top: 4px solid var(--store-color, var(--line));
+}
+.best-card h2 { font-size: 14px; margin: 0 0 6px; }
+.best-card .price { font-size: 22px; font-weight: 700; }
+.best-card .sub { font-size: 12px; color: var(--muted); }
+.best-card.winner { outline: 2px solid var(--good); }
+.best-card .win-badge {
+  display: inline-block; font-size: 11px; background: var(--good-soft); color: var(--good);
+  padding: 1px 8px; border-radius: 99px; margin-left: 6px; font-weight: 600;
+}
+.btn-link {
+  display: inline-block; margin-top: 8px; padding: 8px 14px; border-radius: 8px;
+  background: var(--amazon); color: #fff; text-decoration: none; font-weight: 600; font-size: 14px;
+}
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+.toolbar select, .toolbar label { font-size: 13px; }
+.toolbar select { padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+.item {
+  display: grid; grid-template-columns: 96px 1fr auto; gap: 12px; align-items: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+}
+.item img { width: 96px; height: 96px; object-fit: contain; background: #fff; border-radius: 8px; }
+.item .name { font-size: 14px; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.tag { font-size: 11px; padding: 1px 8px; border-radius: 99px; color: #fff; font-weight: 600; }
+.tag.rakuten { background: var(--rakuten); }
+.tag.yahoo { background: var(--yahoo); }
+.tag.ship { background: var(--good-soft); color: var(--good); }
+.prices { text-align: right; white-space: nowrap; }
+.prices .eff { font-size: 20px; font-weight: 700; }
+.prices .eff small { font-size: 11px; font-weight: 400; color: var(--muted); }
+.prices .raw { font-size: 12px; color: var(--muted); }
+.prices .pt { font-size: 12px; color: var(--good); }
+.prices a {
+  display: inline-block; margin-top: 6px; font-size: 13px; padding: 6px 12px; border-radius: 8px;
+  background: var(--accent); color: #fff; text-decoration: none; font-weight: 600;
+}
+footer { margin-top: 32px; font-size: 12px; color: var(--muted); }
+footer p { margin: 4px 0; }
+
+@media (max-width: 600px) {
+  .item { grid-template-columns: 72px 1fr; }
+  .item img { width: 72px; height: 72px; }
+  .prices { grid-column: 1 / -1; text-align: left; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+  .prices a { margin-left: auto; }
+}
+</style>
+</head>
+<body>
+<div class="pr">当サイトはアフィリエイト広告（楽天アフィリエイト・バリューコマース・Amazonアソシエイト）を利用しています。</div>
+<div class="wrap">
+  <header>
+    <h1>ネット通販 価格比較</h1>
+    <p class="lead">楽天市場・Yahoo!ショッピング・Amazon を、ポイント還元込みの「実質価格」で比べます。</p>
+  </header>
+
+  <form class="search" id="searchForm">
+    <input id="q" type="search" placeholder="商品名・型番を入力（例：AirPods Pro）" autocomplete="off" required>
+    <button id="searchBtn" type="submit">比較する</button>
+  </form>
+
+  <details class="conds" id="conds">
+    <summary>あなたの条件（ポイント還元の上乗せ）</summary>
+    <div class="cond-groups" id="condGroups"></div>
+    <p class="cond-note">※還元率はキャンペーンや制度改定で変わるため目安です。上限ポイントや対象条件は各サービスの公式情報をご確認ください。</p>
+  </details>
+
+  <div id="demoBanner" class="banner" hidden>
+    APIのIDが未設定のため、<strong>サンプルデータ</strong>を表示しています。index.html 内の <code>CONFIG</code> にIDを設定すると実際の検索結果になります。
+  </div>
+
+  <p class="status" id="status"></p>
+  <section class="best" id="best"></section>
+
+  <div class="toolbar" id="toolbar" hidden>
+    <label>並べ替え
+      <select id="sort">
+        <option value="eff">実質価格が安い順</option>
+        <option value="price">価格が安い順</option>
+        <option value="review">レビュー件数順</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="fRakuten" checked> 楽天市場</label>
+    <label><input type="checkbox" id="fYahoo" checked> Yahoo!ショッピング</label>
+    <label><input type="checkbox" id="fFreeShip"> 送料無料のみ</label>
+  </div>
+  <section class="list" id="list"></section>
+
+  <footer>
+    <p>表示価格・ポイントは取得時点のものです。最新の価格・在庫・送料は各販売ページでご確認ください。</p>
+    <p>実質価格 ＝ 価格 − 獲得予定ポイント（1ポイント＝1円換算・送料は含みません）。</p>
+    <p>Amazonのアソシエイトとして、当サイトは適格販売により収入を得ています。</p>
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   設定：ここを書き換えてください
+   ===================================================================== */
+const CONFIG = {
+  rakuten: {
+    // 楽天ウェブサービス（https://webservice.rakuten.co.jp/）で取得したアプリID
+    applicationId: "",
+    // 楽天ウェブサービスでアクセスキーが発行されている場合のみ設定
+    accessKey: "",
+    // 楽天アフィリエイトID（例 "1a2b3c4d.5e6f7a8b.1a2b3c4d.5e6f7a8b"）
+    affiliateId: "05a8f5ac.9b88b2bf.05a8f5ad.04af7757",
+    endpoint: "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601",
+  },
+  yahoo: {
+    // Yahoo!デベロッパーネットワークで取得したClient ID（アプリケーションID）
+    appid: "",
+    // バリューコマースのアフィリエイトID（MyLinkBoxで発行される vc_url= で終わるURL）
+    vcAffiliateId: "",
+    endpoint: "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch",
+  },
+  amazon: {
+    // AmazonアソシエイトのトラッキングID（例 "yourid-22"）
+    tag: "",
+  },
+  hits: 30, // 各サイトから取得する件数（最大30）
+};
+
+/* 条件ごとのポイント上乗せ（%）。目安なので、キャンペーン等に合わせて適宜更新してください */
+const BONUSES = [
+  { id: "r_mobile", store: "rakuten", label: "楽天モバイル契約中", rate: 4, note: "SPU" },
+  { id: "r_card",   store: "rakuten", label: "楽天カードで支払う", rate: 2, note: "SPU" },
+  { id: "r_premium",store: "rakuten", label: "楽天プレミアムカード", rate: 2, note: "SPU・楽天カード分に加算" },
+  { id: "r_bank",   store: "rakuten", label: "楽天銀行で楽天カード引落", rate: 0.5, note: "SPU" },
+  { id: "r_535",    store: "rakuten", label: "5と0のつく日にカード払い", rate: 1, note: "キャンペーン・要エントリー" },
+  { id: "y_lyp",    store: "yahoo",   label: "LYPプレミアム会員（ソフトバンク契約で特典あり）", rate: 2, note: "" },
+  { id: "y_card",   store: "yahoo",   label: "PayPayカードで支払う", rate: 1, note: "" },
+  { id: "y_sb",     store: "yahoo",   label: "ソフトバンク・ワイモバイルのスマホ契約", rate: 0, note: "キャンペーン時に数値を設定" },
+];
+
+/* ===================================================================== */
+
+const $ = (id) => document.getElementById(id);
+const yen = (n) => "¥" + Math.round(n).toLocaleString("ja-JP");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const STORE_NAME = { rakuten: "楽天市場", yahoo: "Yahoo!ショッピング", amazon: "Amazon" };
+const STORAGE_KEY = "hikaku.conds";
+
+let results = [];
+
+/* ---------- 条件チェックボックス ---------- */
+function loadConds() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+}
+function saveConds(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+function renderConds() {
+  const state = loadConds();
+  const groups = { rakuten: [], yahoo: [] };
+  for (const b of BONUSES) {
+    groups[b.store].push(`<label><input type="checkbox" data-bonus="${b.id}" ${state[b.id] ? "checked" : ""}>
+      <span>${esc(b.label)} <small>+${b.rate}%${b.note ? "・" + esc(b.note) : ""}</small></span></label>`);
+  }
+  $("condGroups").innerHTML = Object.entries(groups)
+    .map(([store, rows]) => `<div class="cond-group"><h3>${STORE_NAME[store]}</h3>${rows.join("")}</div>`)
+    .join("");
+  $("condGroups").addEventListener("change", () => {
+    const next = {};
+    document.querySelectorAll("[data-bonus]").forEach((el) => (next[el.dataset.bonus] = el.checked));
+    saveConds(next);
+    render();
+  });
+}
+function bonusRate(store) {
+  const state = loadConds();
+  return BONUSES.filter((b) => b.store === store && state[b.id]).reduce((sum, b) => sum + b.rate, 0);
+}
+
+/* ---------- API 呼び出し ---------- */
+function jsonp(url, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const cb = "__jsonp_" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+    const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, timeoutMs);
+    function cleanup() { clearTimeout(timer); delete window[cb]; script.remove(); }
+    window[cb] = (data) => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error("network")); };
+    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+    document.head.appendChild(script);
+  });
+}
+// まず通常のfetch、CORSで弾かれた場合はJSONPで再試行
+async function getJson(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (e) {
+    if (e.message.startsWith("HTTP")) throw e;
+    return jsonp(url);
+  }
+}
+
+async function searchRakuten(keyword) {
+  const c = CONFIG.rakuten;
+  const p = new URLSearchParams({
+    applicationId: c.applicationId, keyword, hits: CONFIG.hits,
+    format: "json", formatVersion: 2, sort: "+itemPrice", availability: 1, imageFlag: 1,
+  });
+  if (c.accessKey) p.set("accessKey", c.accessKey);
+  if (c.affiliateId) p.set("affiliateId", c.affiliateId);
+  const data = await getJson(`${c.endpoint}?${p}`);
+  if (data.error) throw new Error(data.error_description || data.error);
+  return (data.Items || []).map((it) => ({
+    store: "rakuten",
+    name: it.itemName,
+    price: it.itemPrice,
+    url: it.affiliateUrl || it.itemUrl,
+    image: (it.mediumImageUrls?.[0] || "").replace("?_ex=128x128", "?_ex=200x200"),
+    shop: it.shopName,
+    pointPct: it.pointRate || 1,
+    freeShip: it.postageFlag === 0,
+    reviewAvg: it.reviewAverage || 0,
+    reviewCount: it.reviewCount || 0,
+  }));
+}
+
+async function searchYahoo(keyword) {
+  const c = CONFIG.yahoo;
+  const p = new URLSearchParams({ appid: c.appid, query: keyword, results: CONFIG.hits, in_stock: "true" });
+  if (c.vcAffiliateId) { p.set("affiliate_type", "vc"); p.set("affiliate_id", c.vcAffiliateId); }
+  const data = await getJson(`${c.endpoint}?${p}`);
+  if (data.Error) throw new Error(data.Error.Message || "Yahoo API error");
+  return (data.hits || []).map((it) => {
+    const pts = (it.point?.amount || 0) + (it.point?.bonusAmount || 0);
+    return {
+      store: "yahoo",
+      name: it.name,
+      price: it.price,
+      url: it.url,
+      image: it.image?.medium || it.image?.small || "",
+      shop: it.seller?.name || "",
+      pointPct: it.price && pts ? (pts / it.price) * 100 : 1,
+      freeShip: it.shipping?.code === 2,
+      reviewAvg: it.review?.rate || 0,
+      reviewCount: it.review?.count || 0,
+    };
+  });
+}
+
+function amazonUrl(keyword) {
+  const p = new URLSearchParams({ k: keyword });
+  if (CONFIG.amazon.tag) p.set("tag", CONFIG.amazon.tag);
+  return "https://www.amazon.co.jp/s?" + p;
+}
+
+/* ---------- サンプルデータ（ID未設定時） ---------- */
+function demoData(keyword) {
+  const base = 12000 + (keyword.length * 731) % 9000;
+  const mk = (store, i) => ({
+    store,
+    name: `【サンプル】${keyword} ${["正規品", "国内版", "新品未開封", "送料無料", "ポイント10倍"][i % 5]} ${store === "rakuten" ? "楽天" : "Yahoo"}ショップ${i + 1}`,
+    price: Math.round((base + ((i * 1777 + (store === "yahoo" ? 523 : 0)) % 3000) - 1200) / 10) * 10,
+    url: "#",
+    image: "",
+    shop: `サンプルショップ${i + 1}`,
+    pointPct: [1, 1, 2, 5, 10][(i + (store === "yahoo" ? 2 : 0)) % 5],
+    freeShip: i % 3 !== 1,
+    reviewAvg: 3.5 + (i % 4) * 0.4,
+    reviewCount: (i * 37) % 250,
+  });
+  return [...Array(6)].flatMap((_, i) => [mk("rakuten", i), mk("yahoo", i)]);
+}
+
+/* ---------- 表示 ---------- */
+function withEffective(it) {
+  const pct = it.pointPct + bonusRate(it.store);
+  const points = Math.floor(it.price * pct / 100);
+  return { ...it, pct, points, eff: it.price - points };
+}
+
+function render() {
+  if (!results.length && !$("q").value) return;
+  const keyword = $("q").value.trim();
+  const items = results.map(withEffective);
+
+  // 各サイトの最安（実質価格）
+  const bestOf = (store) => items.filter((i) => i.store === store).sort((a, b) => a.eff - b.eff)[0];
+  const bests = { rakuten: bestOf("rakuten"), yahoo: bestOf("yahoo") };
+  const winner = [bests.rakuten, bests.yahoo].filter(Boolean).sort((a, b) => a.eff - b.eff)[0];
+
+  const bestCard = (store) => {
+    const b = bests[store];
+    const color = `var(--${store})`;
+    if (!b) return `<div class="best-card" style="--store-color:${color}"><h2>${STORE_NAME[store]}</h2><div class="sub">該当なし</div></div>`;
+    return `<div class="best-card ${b === winner ? "winner" : ""}" style="--store-color:${color}">
+      <h2>${STORE_NAME[store]}の最安${b === winner ? '<span class="win-badge">いちばんお得</span>' : ""}</h2>
+      <div class="price">${yen(b.eff)}</div>
+      <div class="sub">価格 ${yen(b.price)} − ${b.points.toLocaleString()}pt（${b.pct.toFixed(1)}%）</div>
+      <div class="sub">${esc(b.shop)}</div>
+    </div>`;
+  };
+  $("best").innerHTML = bestCard("rakuten") + bestCard("yahoo") +
+    `<div class="best-card" style="--store-color:var(--amazon)">
+      <h2>Amazon</h2>
+      <div class="sub">Amazonの価格は販売ページでご確認ください。</div>
+      <a class="btn-link" href="${esc(amazonUrl(keyword))}" target="_blank" rel="noopener sponsored">Amazonで「${esc(keyword)}」を見る</a>
+    </div>`;
+
+  // 一覧
+  const show = { rakuten: $("fRakuten").checked, yahoo: $("fYahoo").checked };
+  const freeOnly = $("fFreeShip").checked;
+  const sorters = {
+    eff: (a, b) => a.eff - b.eff,
+    price: (a, b) => a.price - b.price,
+    review: (a, b) => b.reviewCount - a.reviewCount,
+  };
+  const list = items
+    .filter((i) => show[i.store] && (!freeOnly || i.freeShip))
+    .sort(sorters[$("sort").value]);
+
+  $("list").innerHTML = list.map((it) => `
+    <article class="item">
+      ${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy">` : `<img alt="">`}
+      <div>
+        <p class="name">${esc(it.name)}</p>
+        <div class="meta">
+          <span class="tag ${it.store}">${STORE_NAME[it.store]}</span>
+          ${it.freeShip ? '<span class="tag ship">送料無料</span>' : ""}
+          <span>${esc(it.shop)}</span>
+          ${it.reviewCount ? `<span>★${Number(it.reviewAvg).toFixed(1)}（${it.reviewCount}件）</span>` : ""}
+        </div>
+      </div>
+      <div class="prices">
+        <div class="eff">${yen(it.eff)} <small>実質</small></div>
+        <div class="raw">価格 ${yen(it.price)}</div>
+        <div class="pt">${it.points.toLocaleString()}pt 還元（${it.pct.toFixed(1)}%）</div>
+        <a href="${esc(it.url)}" target="_blank" rel="noopener sponsored">ショップで見る</a>
+      </div>
+    </article>`).join("") || `<p class="status">条件に合う商品がありません。</p>`;
+}
+
+async function search(keyword) {
+  const btn = $("searchBtn");
+  btn.disabled = true;
+  $("status").textContent = "検索中…";
+  $("status").classList.remove("error");
+
+  const hasRakuten = !!CONFIG.rakuten.applicationId;
+  const hasYahoo = !!CONFIG.yahoo.appid;
+  const demo = !hasRakuten && !hasYahoo;
+  $("demoBanner").hidden = !demo;
+
+  const errors = [];
+  if (demo) {
+    results = demoData(keyword);
+  } else {
+    const [r, y] = await Promise.allSettled([
+      hasRakuten ? searchRakuten(keyword) : Promise.resolve([]),
+      hasYahoo ? searchYahoo(keyword) : Promise.resolve([]),
+    ]);
+    results = [];
+    if (r.status === "fulfilled") results.push(...r.value); else errors.push("楽天: " + r.reason.message);
+    if (y.status === "fulfilled") results.push(...y.value); else errors.push("Yahoo: " + y.reason.message);
+    if (!hasRakuten) errors.push("楽天のアプリIDが未設定です");
+    if (!hasYahoo) errors.push("YahooのアプリIDが未設定です");
+  }
+
+  const time = new Date().toLocaleString("ja-JP", { dateStyle: "short", timeStyle: "short" });
+  $("status").textContent = `「${keyword}」の結果 ${results.length}件（${time} 時点）` + (errors.length ? " ／ " + errors.join("、") : "");
+  $("status").classList.toggle("error", errors.length > 0 && !results.length);
+  $("toolbar").hidden = false;
+  btn.disabled = false;
+  render();
+
+  const url = new URL(location.href);
+  url.searchParams.set("q", keyword);
+  history.replaceState(null, "", url);
+}
+
+/* ---------- 初期化 ---------- */
+renderConds();
+$("searchForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const kw = $("q").value.trim();
+  if (kw) search(kw);
+});
+["sort", "fRakuten", "fYahoo", "fFreeShip"].forEach((id) => $(id).addEventListener("change", render));
+
+const initial = new URLSearchParams(location.search).get("q");
+if (initial) { $("q").value = initial; search(initial); }
+</script>
+</body>
+</html>
