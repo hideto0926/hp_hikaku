@@ -192,12 +192,12 @@ footer p { margin: 4px 0; }
 const CONFIG = {
   rakuten: {
     // 楽天ウェブサービス（https://webservice.rakuten.co.jp/）で取得したアプリID
-    applicationId: "",
+    applicationId: "2c13a214-5127-4e21-a7d5-7f9637c8b5bc",
     // 楽天ウェブサービスでアクセスキーが発行されている場合のみ設定
-    accessKey: "",
+    accessKey: "pk_iZUPBRpoTXpoFHZfCKddIm0efJEjyAAiHSunah1XVEy",
     // 楽天アフィリエイトID（例 "1a2b3c4d.5e6f7a8b.1a2b3c4d.5e6f7a8b"）
     affiliateId: "05a8f5ac.9b88b2bf.05a8f5ad.04af7757",
-    endpoint: "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601",
+    endpoint: "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701",
   },
   yahoo: {
     // Yahoo!デベロッパーネットワークで取得したClient ID（アプリケーションID）
@@ -298,6 +298,7 @@ async function searchRakuten(keyword) {
   if (c.accessKey) p.set("accessKey", c.accessKey);
   if (c.affiliateId) p.set("affiliateId", c.affiliateId);
   const data = await getJson(`${c.endpoint}?${p}`);
+  if (data.errors) throw new Error(data.errors.errorMessage || "楽天 API error");
   if (data.error) throw new Error(data.error_description || data.error);
   return (data.Items || []).map((it) => ({
     store: "rakuten",
